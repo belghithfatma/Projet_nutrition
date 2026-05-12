@@ -1,0 +1,10 @@
+@page "/admin/ingredients"
+@rendermode InteractiveServer
+
+@inject IngredientService IngredientService
+
+<h1>Manage Ingredients</h1>
+<div class="form-line"><input placeholder="Name" @bind="ingredient.Name" /><input placeholder="Unit" @bind="ingredient.Unit" /><input type="number" step="0.1" placeholder="Calories/unit" @bind="ingredient.CaloriesPerUnit" /><button @onclick="SaveIngredient">@(ingredient.Id == 0 ? "Add" : "Update")</button></div>
+<table><thead><tr><th>Name</th><th>Unit</th><th>Calories</th><th>Actions</th></tr></thead><tbody>@foreach(var i in ingredients){<tr><td>@i.Name</td><td>@i.Unit</td><td>@i.CaloriesPerUnit</td><td><button @onclick="()=>Edit(i)">Edit</button><button class="danger" @onclick="()=>Delete(i.Id)">Delete</button></td></tr>}</tbody></table>
+@code{private List<Ingredient> ingredients=new(); private Ingredient ingredient=new(); protected override async Task OnInitializedAsync()=>await Load(); private async Task Load()=>ingredients=await IngredientService.GetAllAsync(); private void Edit(Ingredient i)=>ingredient=new Ingredient{Id=i.Id,Name=i.Name,Unit=i.Unit,CaloriesPerUnit=i.CaloriesPerUnit}; private async Task SaveIngredient(){ if(ingredient.Id==0) await IngredientService.AddAsync(ingredient); else await IngredientService.UpdateAsync(ingredient); ingredient=new(); await Load();} private async Task Delete(int id){await IngredientService.DeleteAsync(id); await Load();}}
+<style>.form-line{display:flex;gap:12px;flex-wrap:wrap;margin:25px 0}.form-line input{padding:12px;border:0;border-radius:12px;background:#f5f5f5}.form-line button,td button{padding:10px 14px;border:0;border-radius:10px;background:#6c63ff;color:white}table{width:100%;background:white;border-radius:18px;overflow:hidden;border-collapse:collapse}th,td{padding:14px;border-bottom:1px solid #eee}.danger{background:#ff4d4d}</style>

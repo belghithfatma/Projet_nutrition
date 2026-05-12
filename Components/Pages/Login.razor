@@ -1,0 +1,58 @@
+@page "/login"
+@rendermode InteractiveServer
+
+@inject AuthService AuthService
+@inject NavigationManager NavigationManager
+
+<h3>Connexion</h3>
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger">
+        @errorMessage
+    </div>
+}
+
+<div class="card p-4" style="max-width: 450px;">
+    <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input class="form-control" @bind="email" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Mot de passe</label>
+        <input type="password" class="form-control" @bind="password" />
+    </div>
+
+    <button class="btn btn-primary" @onclick="HandleLogin">
+        Se connecter
+    </button>
+</div>
+
+@code {
+    private string email = string.Empty;
+    private string password = string.Empty;
+    private string errorMessage = string.Empty;
+
+    private async Task HandleLogin()
+    {
+        errorMessage = string.Empty;
+
+        var user = await AuthService.LoginAsync(email, password);
+
+        if (user == null)
+        {
+            errorMessage = "Email ou mot de passe incorrect.";
+            return;
+        }
+
+        if (user.Role == UserRole.Admin)
+        {
+            NavigationManager.NavigateTo("/admin/dashboard");
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/user/home");
+        }
+    }
+}

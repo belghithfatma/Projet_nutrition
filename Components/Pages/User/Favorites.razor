@@ -1,0 +1,45 @@
+@page "/favorites"
+@rendermode InteractiveServer
+
+@using app_nutri.Models
+@using app_nutri.Components.Shared
+@using app_nutri.Services
+
+@inject FavoriteService FavoriteService
+@inject RecipeService RecipeService
+
+<h1>My Favorites ❤️</h1>
+
+<div class="recipes-grid">
+
+    @if (favoriteRecipes.Any())
+    {
+        @foreach (var recipe in favoriteRecipes)
+        {
+            <RecipeCard Recipe="recipe" />
+        }
+    }
+    else
+    {
+        <p>No favorite recipes yet.</p>
+    }
+
+</div>
+
+@code {
+
+    private List<Recipe> favoriteRecipes = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var favoriteIds =
+            await FavoriteService.GetFavoriteIdsAsync();
+
+        var allRecipes =
+            await RecipeService.GetAllAsync();
+
+        favoriteRecipes = allRecipes
+            .Where(r => favoriteIds.Contains(r.Id))
+            .ToList();
+    }
+}

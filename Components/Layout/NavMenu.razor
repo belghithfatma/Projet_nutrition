@@ -1,0 +1,117 @@
+@using Microsoft.AspNetCore.Components.Authorization
+@using app_nutri.Services
+@inject AuthService AuthService
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">app_nutri</a>
+    </div>
+</div>
+
+<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+
+<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="nav flex-column">
+
+        <!-- Liens publics -->
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                Home
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="recipes">
+                Recipes
+            </NavLink>
+        </div>
+
+        <!-- Menu pour User connecté -->
+        <AuthorizeView Roles="User">
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="user/home">
+                        Espace User
+                    </NavLink>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="create-recipe">
+                        Create Recipe
+                    </NavLink>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="favorites">
+                        Favorites
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
+
+        <!-- Menu pour Admin connecté -->
+        <AuthorizeView Roles="Admin">
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="admin/dashboard">
+                        Dashboard
+                    </NavLink>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="admin/ingredients">
+                        Ingredients
+                    </NavLink>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="admin/users">
+                        Users
+                    </NavLink>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="admin/recipes">
+                        Recipes Admin
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
+
+        <!-- Login / Register / Logout -->
+        <AuthorizeView>
+            <Authorized>
+                <div class="nav-item px-3 mt-3">
+                    <button class="btn btn-danger btn-sm" @onclick="Logout">
+                        Déconnexion
+                    </button>
+                </div>
+            </Authorized>
+
+            <NotAuthorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="login">
+                        Login
+                    </NavLink>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="register">
+                        Register
+                    </NavLink>
+                </div>
+            </NotAuthorized>
+        </AuthorizeView>
+
+    </nav>
+</div>
+
+@code {
+    private void Logout()
+    {
+        AuthService.Logout();
+        NavigationManager.NavigateTo("/login", forceLoad: true);
+    }
+}

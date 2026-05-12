@@ -1,0 +1,253 @@
+@using app_nutri.Models
+@using app_nutri.Services
+
+@inject FavoriteService FavoriteService
+@inject RecipeService RecipeService
+
+<div class="recipe-card">
+
+    <img src="@Recipe.ImageUrl"
+         alt="recipe" />
+
+    <div class="recipe-content">
+
+        <h3>@Recipe.Title</h3>
+
+        <p>@Recipe.Description</p>
+
+        <div class="recipe-info">
+
+            <span>@Recipe.Category</span>
+
+            <span>@Recipe.CuisineType</span>
+
+        </div>
+
+        <div class="calories">
+
+            <p>
+                Total:
+                @TotalCalories kcal
+            </p>
+
+            <p>
+                Per Person:
+                @CaloriesPerPerson kcal
+            </p>
+
+        </div>
+
+        <p class="author">
+            By @Recipe.AuthorName
+        </p>
+
+    </div>
+
+    <a href="@($"/recipe-details/{Recipe.Id}")"
+       class="details-btn">
+
+        View Details
+
+    </a>
+
+    <a href="@($"/edit-recipe/{Recipe.Id}")"
+       class="edit-btn">
+
+        Edit
+
+    </a>
+
+    <button class="favorite-btn"
+            @onclick="ToggleFavorite">
+
+        @(isFavorite
+            ? "❤️ Remove Favorite"
+            : "🤍 Add Favorite")
+
+    </button>
+
+    <button class="delete-btn"
+            @onclick="DeleteRecipe">
+
+        Delete
+
+    </button>
+
+</div>
+
+@code {
+
+    [Parameter]
+    public Recipe Recipe { get; set; } = new();
+
+    [Parameter]
+    public EventCallback OnDelete { get; set; }
+
+    private bool isFavorite;
+
+    private double TotalCalories =>
+        Recipe.RecipeIngredients?.Sum(
+            ri => ri.Quantity *
+            (ri.Ingredient?.CaloriesPerUnit ?? 0)
+        ) ?? 0;
+
+    private double CaloriesPerPerson =>
+        Recipe.Servings > 0
+        ? TotalCalories / Recipe.Servings
+        : 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isFavorite =
+            await FavoriteService
+            .IsFavoriteAsync(Recipe.Id);
+    }
+
+    private async Task ToggleFavorite()
+    {
+        await FavoriteService
+            .ToggleFavoriteAsync(Recipe.Id);
+
+        isFavorite =
+            await FavoriteService
+            .IsFavoriteAsync(Recipe.Id);
+
+        StateHasChanged();
+    }
+
+    private async Task DeleteRecipe()
+    {
+        await RecipeService.DeleteAsync(Recipe.Id);
+
+        await OnDelete.InvokeAsync();
+    }
+}
+
+<style>
+
+.recipe-card{
+    width:320px;
+    background:white;
+    border-radius:22px;
+    overflow:hidden;
+    box-shadow:0 8px 25px rgba(0,0,0,0.08);
+    transition:0.3s;
+}
+
+.recipe-card:hover{
+    transform:translateY(-5px);
+}
+
+.recipe-card img{
+    width:100%;
+    height:220px;
+    object-fit:cover;
+}
+
+.recipe-content{
+    padding:20px;
+}
+
+.recipe-content h3{
+    margin-bottom:10px;
+    font-size:28px;
+}
+
+.recipe-content p{
+    color:#555;
+}
+
+.recipe-info{
+    display:flex;
+    gap:10px;
+    margin:15px 0;
+}
+
+.recipe-info span{
+    background:#f5f5f5;
+    padding:6px 14px;
+    border-radius:20px;
+    font-size:14px;
+}
+
+.calories{
+    margin-top:15px;
+}
+
+.author{
+    margin-top:15px;
+    color:gray;
+    font-size:14px;
+}
+
+.details-btn{
+    display:block;
+    text-align:center;
+    margin:15px;
+    padding:14px;
+    border-radius:14px;
+    background:#6c63ff;
+    color:white;
+    text-decoration:none;
+    font-weight:700;
+    transition:0.3s;
+}
+
+.details-btn:hover{
+    background:#574bdb;
+}
+
+.edit-btn{
+    display:block;
+    text-align:center;
+    margin:0 15px 15px;
+    padding:14px;
+    border-radius:14px;
+    background:#ffb703;
+    color:white;
+    text-decoration:none;
+    font-weight:700;
+    transition:0.3s;
+}
+
+.edit-btn:hover{
+    background:#f4a000;
+}
+
+.favorite-btn{
+    width:calc(100% - 30px);
+    margin:0 15px 15px;
+    padding:14px;
+    border:none;
+    border-radius:14px;
+    background:pink;
+    color:white;
+    font-size:16px;
+    font-weight:700;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.favorite-btn:hover{
+    transform:scale(1.02);
+}
+
+.delete-btn{
+    width:calc(100% - 30px);
+    margin:0 15px 20px;
+    padding:14px;
+    border:none;
+    border-radius:14px;
+    background:#ff4d4d;
+    color:white;
+    font-size:16px;
+    font-weight:700;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.delete-btn:hover{
+    background:#e63939;
+}
+
+</style>

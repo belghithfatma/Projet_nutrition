@@ -1,0 +1,52 @@
+@page "/admin/dashboard"
+@rendermode InteractiveServer
+
+@inject AuthService AuthService
+@inject NavigationManager NavigationManager
+
+@using app_nutri.Models
+
+@if (!isReady)
+{
+    <p>Chargement...</p>
+}
+else
+{
+    <h3>Dashboard Admin</h3>
+
+    <div class="alert alert-success">
+        Bienvenue dans l'espace Admin.
+    </div>
+
+    <ul>
+        <li>Gestion des ingrédients</li>
+        <li>Gestion des utilisateurs</li>
+        <li>Gestion des recettes</li>
+        <li>Statistiques</li>
+    </ul>
+}
+
+@code {
+    private bool isReady = false;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (AuthService.CurrentUser == null)
+            {
+                NavigationManager.NavigateTo("/login");
+                return;
+            }
+
+            if (AuthService.CurrentUser.Role != UserRole.Admin)
+            {
+                NavigationManager.NavigateTo("/user/home");
+                return;
+            }
+
+            isReady = true;
+            StateHasChanged();
+        }
+    }
+}

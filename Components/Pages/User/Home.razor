@@ -1,0 +1,270 @@
+@page "/recipes"
+@page "/"
+@rendermode InteractiveServer
+
+@using app_nutri.Models
+@using app_nutri.Components.Shared
+@using app_nutri.Services
+
+@inject RecipeService RecipeService
+@inject FavoriteService FavoriteService
+
+<div class="home-container">
+
+    <div class="page-head">
+
+        <div>
+
+            <h1>Discover Recipes</h1>
+
+            <p>
+                Explore delicious recipes from different cuisines
+            </p>
+
+        </div>
+
+        <a class="primary"
+           href="/create-recipe">
+
+            Create Recipe
+
+        </a>
+
+    </div>
+
+    <div class="filters">
+
+        <input placeholder="Search recipe..."
+               @bind="searchText"
+               @bind:event="oninput" />
+
+        <select @bind="selectedCategory">
+
+            <option value="">All Categories</option>
+
+            <option value="Petit-déjeuner">
+                Petit-déjeuner
+            </option>
+
+            <option value="Déjeuner">
+                Déjeuner
+            </option>
+
+            <option value="Dîner">
+                Dîner
+            </option>
+
+            <option value="Dessert">
+                Dessert
+            </option>
+
+        </select>
+
+        <select @bind="selectedCuisine">
+
+            <option value="">All Cuisines</option>
+
+            <option value="Tunisienne">
+                Tunisienne
+            </option>
+
+            <option value="Française">
+                Française
+            </option>
+
+            <option value="Italienne">
+                Italienne
+            </option>
+
+            <option value="Méditerranéenne">
+                Méditerranéenne
+            </option>
+
+        </select>
+
+    </div>
+
+    <div class="recipes-grid">
+
+        @if (loading)
+        {
+            <p class="loading">
+                Loading recipes...
+            </p>
+        }
+        else if (FilteredRecipes.Any())
+        {
+            @foreach (var recipe in FilteredRecipes)
+            {
+                <RecipeCard Recipe="recipe"
+                            OnDelete="LoadRecipes" />
+            }
+        }
+        else
+        {
+            <div class="empty-box">
+
+                <h3>No recipes found</h3>
+
+                <p>
+                    Create your first recipe 🍳
+                </p>
+
+            </div>
+        }
+
+    </div>
+
+</div>
+
+@code {
+
+    private List<Recipe> recipes = new();
+
+    private bool loading = true;
+
+    private string searchText = "";
+
+    private string selectedCategory = "";
+
+    private string selectedCuisine = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadRecipes();
+    }
+
+    private async Task LoadRecipes()
+    {
+        loading = true;
+
+        recipes = await RecipeService.GetAllAsync();
+
+        loading = false;
+
+        StateHasChanged();
+    }
+
+    private IEnumerable<Recipe> FilteredRecipes
+    {
+        get
+        {
+            IEnumerable<Recipe> query = recipes;
+
+            if (!string.IsNullOrWhiteSpace(searchText))
+            {
+                query = query.Where(r =>
+
+                    r.Title.Contains(
+                        searchText,
+                        StringComparison.OrdinalIgnoreCase)
+
+                    ||
+
+                    r.Description.Contains(
+                        searchText,
+                        StringComparison.OrdinalIgnoreCase)
+                );
+            }
+
+            if (!string.IsNullOrWhiteSpace(selectedCategory))
+            {
+                query = query.Where(r =>
+                    r.Category == selectedCategory);
+            }
+
+            if (!string.IsNullOrWhiteSpace(selectedCuisine))
+            {
+                query = query.Where(r =>
+                    r.CuisineType == selectedCuisine);
+            }
+
+            return query.ToList();
+        }
+    }
+}
+
+<style>
+
+.home-container{
+    padding:40px;
+}
+
+.page-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:30px;
+}
+
+.page-head h1{
+    font-size:42px;
+    margin-bottom:8px;
+}
+
+.page-head p{
+    color:gray;
+}
+
+.primary{
+    background:#6c63ff;
+    color:white;
+    padding:14px 20px;
+    border-radius:14px;
+    text-decoration:none;
+    font-weight:700;
+    transition:0.3s;
+}
+
+.primary:hover{
+    background:#574bdb;
+}
+
+.filters{
+    display:flex;
+    gap:18px;
+    flex-wrap:wrap;
+    margin-bottom:35px;
+}
+
+.filters input,
+.filters select{
+    padding:14px 18px;
+    border:none;
+    border-radius:14px;
+    background:#f5f5f5;
+    min-width:220px;
+    font-size:15px;
+}
+
+.recipes-grid{
+    display:flex;
+    flex-wrap:wrap;
+    gap:25px;
+}
+
+.loading{
+    font-size:18px;
+    color:gray;
+}
+
+.empty-box{
+    width:100%;
+    padding:60px;
+    background:white;
+    border-radius:24px;
+    text-align:center;
+    box-shadow:0 8px 25px rgba(0,0,0,0.08);
+}
+
+.empty-box h3{
+    font-size:28px;
+    margin-bottom:10px;
+}
+
+.empty-box p{
+    color:gray;
+    font-size:17px;
+}
+
+</style>
