@@ -1,0 +1,95 @@
+@page "/homevisitor"
+@layout AuthLayout
+@rendermode InteractiveServer
+
+@using Microsoft.EntityFrameworkCore
+@using app_nutri.Data
+@using app_nutri.Models
+
+@inject AppDbContext DbContext
+
+<section id="visitor-recipes" class="visitor-recipes-section">
+    <div class="visitor-section-header">
+        <span>Recettes disponibles</span>
+
+
+    </div>
+
+    @if (recipes == null)
+    {
+        <p class="visitor-loading">Chargement des recettes...</p>
+    }
+    else if (!recipes.Any())
+    {
+        <div class="visitor-empty">
+            <span>🍽️</span>
+            <h4>Aucune recette disponible</h4>
+            <p>Les recettes ajoutées par les utilisateurs apparaîtront ici.</p>
+        </div>
+    }
+    else
+    {
+        <div class="visitor-recipes-grid">
+            @foreach (var recipe in recipes)
+            {
+                <article class="visitor-recipe-card">
+                    <div class="visitor-recipe-image">
+                        @if (!string.IsNullOrWhiteSpace(recipe.ImageUrl))
+                        {
+                            <img src="@recipe.ImageUrl" alt="@recipe.Title" />
+                        }
+                        else
+                        {
+                            <span>🍲</span>
+                        }
+                    </div>
+
+                    <div class="visitor-recipe-body">
+                        <div class="visitor-recipe-tags">
+                            <span>@recipe.Category</span>
+                            <span>@recipe.CuisineType</span>
+                        </div>
+
+                        <h3>@recipe.Title</h3>
+
+                        <p>
+                            @ShortText(recipe.Description, 120)
+                        </p>
+
+                        <div class="visitor-recipe-meta">
+                            <span>👥 @recipe.Servings personnes</span>
+                            <span>👨‍🍳 @recipe.AuthorName</span>
+                        </div>
+
+                        <a class="visitor-details-btn" href="@($"/visitor/recipe/{recipe.Id}")">
+                            Voir détail
+                        </a>
+                    </div>
+                </article>
+            }
+        </div>
+    }
+</section>
+
+@code {
+    private List<Recipe>? recipes;
+
+    protected override async Task OnInitializedAsync()
+    {
+        recipes = await DbContext.Recipes
+            .OrderByDescending(r => r.CreatedAt)
+            .Take(6)
+            .ToListAsync();
+    }
+
+    private string ShortText(string? text, int maxLength)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+            return "Aucune description disponible.";
+
+        if (text.Length <= maxLength)
+            return text;
+
+        return text.Substring(0, maxLength) + "...";
+    }
+}

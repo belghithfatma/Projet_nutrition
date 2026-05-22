@@ -58,3 +58,128 @@ h1:focus {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+/* =========================
+   PUBLIC AUTH NAVBAR
+   ========================= */
+
+   .public-layout {
+    min-height: 100vh;
+    background: #fffaf0;
+}
+
+.public-navbar {
+    height: 76px;
+    padding: 0 70px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(255, 255, 255, 0.96);
+    border-bottom: 1px solid rgba(111, 165, 54, 0.16);
+    box-shadow: 0 8px 30px rgba(60, 80, 35, 0.08);
+    position: sticky;
+    top: 0;
+    z-index: 999;
+}
+
+.public-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none !important;
+}
+
+.public-brand:hover {
+    text-decoration: none !important;
+}
+
+.public-brand-icon {
+    width: 46px;
+    height: 46px;
+    display: grid;
+    place-items: center;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #7daf32, #f4a442);
+    box-shadow: 0 12px 28px rgba(111, 165, 54, 0.25);
+    font-size: 22px;
+}
+
+.public-brand-text {
+    color: #263a1f;
+    font-size: 24px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+}
+
+.public-nav {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.public-nav-link {
+    color: #405331 !important;
+    text-decoration: none !important;
+    font-weight: 700;
+    font-size: 16px;
+    padding: 10px 18px;
+    border-radius: 999px;
+    transition: all 0.2s ease;
+}
+
+.public-nav-link:hover {
+    color: #6fa536 !important;
+    background: #eef7df;
+    text-decoration: none !important;
+}
+
+.public-nav-link.active {
+    color: #6fa536 !important;
+    background: #eef7df;
+    text-decoration: none !important;
+}
+
+.public-nav-btn {
+    color: white !important;
+    text-decoration: none !important;
+    font-weight: 800;
+    font-size: 16px;
+    padding: 11px 24px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #6fa536, #f4a442);
+    box-shadow: 0 12px 28px rgba(111, 165, 54, 0.28);
+    transition: all 0.2s ease;
+}
+
+.public-nav-btn:hover {
+    color: white !important;
+    transform: translateY(-2px);
+    box-shadow: 0 16px 36px rgba(111, 165, 54, 0.35);
+    text-decoration: none !important;
+}
+
+.public-nav-btn.active {
+    color: white !important;
+    text-decoration: none !important;
+}
+
+.public-main {
+    min-height: calc(100vh - 76px);
+}
+
+@media (max-width: 768px) {
+    .public-navbar {
+        padding: 18px 24px;
+        height: auto;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .public-nav {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .public-brand-text {
+        font-size: 22px;
+    }
+}

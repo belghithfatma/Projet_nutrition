@@ -1,52 +1,662 @@
 @page "/admin/dashboard"
 @rendermode InteractiveServer
 
-@inject AuthService AuthService
-@inject NavigationManager NavigationManager
+@using app_nutri.Services
 
-@using app_nutri.Models
+@inject DashboardService DashboardService
 
-@if (!isReady)
-{
-    <p>Chargement...</p>
-}
-else
-{
-    <h3>Dashboard Admin</h3>
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-    <div class="alert alert-success">
-        Bienvenue dans l'espace Admin.
+<div class="dashboard-page">
+
+
+    <div class="stats-grid">
+
+        <div class="stat-card users">
+
+            <div class="icon">
+                <i class="fa-solid fa-users"></i>
+            </div>
+
+            <div>
+                <span>Total Users</span>
+                <h2>@totalUsers</h2>
+            </div>
+
+        </div>
+
+        <div class="stat-card ingredients">
+
+            <div class="icon">
+                <i class="fa-solid fa-carrot"></i>
+            </div>
+
+            <div>
+                <span>Ingredients</span>
+                <h2>@totalIngredients</h2>
+            </div>
+
+        </div>
+
+        <div class="stat-card recipes">
+
+            <div class="icon">
+                <i class="fa-solid fa-bowl-food"></i>
+            </div>
+
+            <div>
+                <span>Recipes</span>
+                <h2>@totalRecipes</h2>
+            </div>
+
+        </div>
+
+        <div class="stat-card calories">
+
+            <div class="icon">
+                <i class="fa-solid fa-fire"></i>
+            </div>
+
+            <div>
+                <span>Calories</span>
+                <h2>@totalCalories</h2>
+            </div>
+
+        </div>
+
     </div>
 
-    <ul>
-        <li>Gestion des ingrédients</li>
-        <li>Gestion des utilisateurs</li>
-        <li>Gestion des recettes</li>
-        <li>Statistiques</li>
-    </ul>
-}
+
+    <div class="content-grid">
+
+
+        <div class="left-section">
+
+
+
+            <div class="card">
+
+                <div class="card-header">
+
+              
+
+                </div>
+
+                <div class="actions-grid">
+
+                    <a href="/admin/users" class="action-card">
+                        <i class="fa-solid fa-users"></i>
+                        <span>Manage Users</span>
+                    </a>
+
+                    <a href="/admin/ingredients" class="action-card">
+                        <i class="fa-solid fa-leaf"></i>
+                        <span>Ingredients</span>
+                    </a>
+
+                    <a href="/admin/recipes" class="action-card">
+                        <i class="fa-solid fa-bowl-food"></i>
+                        <span>Recipes</span>
+                    </a>
+
+                    <a href="/" class="action-card">
+                        <i class="fa-solid fa-house"></i>
+                        <span>Homepage</span>
+                    </a>
+
+                </div>
+
+            </div>
+
+  
+
+           
+
+        </div>
+
+      
+
+       
+           
+
+                
+
+               
+
+                </div>
+
+
+    </div>
+
+
 
 @code {
-    private bool isReady = false;
 
-    protected override void OnAfterRender(bool firstRender)
+    private int totalUsers;
+    private int totalIngredients;
+    private int totalRecipes;
+    private double totalCalories;
+
+    private List<string> recentActivities = new();
+
+    protected override async Task OnInitializedAsync()
     {
-        if (firstRender)
-        {
-            if (AuthService.CurrentUser == null)
-            {
-                NavigationManager.NavigateTo("/login");
-                return;
-            }
+        totalUsers =
+            await DashboardService.GetUsersCountAsync();
 
-            if (AuthService.CurrentUser.Role != UserRole.Admin)
-            {
-                NavigationManager.NavigateTo("/user/home");
-                return;
-            }
+        totalIngredients =
+            await DashboardService.GetIngredientsCountAsync();
 
-            isReady = true;
-            StateHasChanged();
-        }
+        totalRecipes =
+            await DashboardService.GetRecipesCountAsync();
+
+        totalCalories =
+            await DashboardService.GetCaloriesAsync();
+
+        recentActivities =
+            await DashboardService.GetRecentActivitiesAsync();
     }
 }
+<style>
+
+.dashboard-page{
+
+    padding:35px;
+
+    min-height:100vh;
+
+    background:
+    linear-gradient(
+    135deg,
+    #f7faef,
+    #eef4df);
+
+    font-family:'Segoe UI',sans-serif;
+}
+
+
+
+.hero{
+
+    background:
+    linear-gradient(
+    135deg,
+    rgba(255,255,255,0.95),
+    rgba(255,255,255,0.75));
+
+    backdrop-filter:blur(18px);
+
+    border-radius:35px;
+
+    padding:50px;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:35px;
+
+    box-shadow:
+    0 15px 40px rgba(0,0,0,0.06);
+}
+
+.badge{
+
+    display:inline-block;
+
+    background:#edf7d7;
+
+    color:#72912d;
+
+    padding:10px 18px;
+
+    border-radius:50px;
+
+    font-weight:700;
+
+    margin-bottom:20px;
+}
+
+.hero h1{
+
+    font-size:62px;
+
+    font-weight:900;
+
+    color:#1f3115;
+
+    margin-bottom:18px;
+}
+
+.hero p{
+
+    max-width:700px;
+
+    color:#687460;
+
+    line-height:1.8;
+
+    font-size:17px;
+}
+
+.hero-icon{
+
+    width:180px;
+    height:180px;
+
+    border-radius:50%;
+
+    background:
+    linear-gradient(
+    135deg,
+    #a4c63a,
+    #ffd447);
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    color:white;
+
+    font-size:70px;
+
+    box-shadow:
+    0 15px 45px rgba(164,198,58,0.3);
+}
+
+/* STATS */
+
+.stats-grid{
+
+    display:grid;
+
+    grid-template-columns:
+    repeat(4,1fr);
+
+    gap:25px;
+
+    margin-bottom:35px;
+}
+
+.stat-card{
+
+    background:white;
+
+    border-radius:30px;
+
+    padding:30px;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:20px;
+
+    box-shadow:
+    0 12px 35px rgba(0,0,0,0.05);
+
+    transition:0.3s;
+}
+
+.stat-card:hover{
+
+    transform:
+    translateY(-5px)
+    scale(1.02);
+}
+
+.icon{
+
+    width:75px;
+    height:75px;
+
+    border-radius:22px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    color:white;
+
+    font-size:30px;
+}
+
+.users .icon{
+    background:linear-gradient(135deg,#8bc63f,#b5db58);
+}
+
+.ingredients .icon{
+    background:linear-gradient(135deg,#57d39b,#1fb67d);
+}
+
+.recipes .icon{
+    background:linear-gradient(135deg,#ffb347,#ffcf33);
+}
+
+.calories .icon{
+    background:linear-gradient(135deg,#ff6b6b,#ff9f43);
+}
+
+.stat-card span{
+
+    color:#7a8475;
+}
+
+.stat-card h2{
+
+    font-size:42px;
+
+    margin-top:8px;
+
+    color:#203515;
+}
+
+/* GRID */
+
+.content-grid{
+
+    display:grid;
+
+    grid-template-columns:2fr 1fr;
+
+    gap:30px;
+}
+
+.left-section,
+.right-section{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:30px;
+}
+
+/* CARD */
+
+.card,
+.analytics-card{
+
+    background:white;
+
+    border-radius:30px;
+
+    padding:30px;
+
+    box-shadow:
+    0 15px 35px rgba(0,0,0,0.05);
+}
+
+.card-header{
+
+    margin-bottom:25px;
+}
+
+.card-header h3{
+
+    font-size:28px;
+
+    color:#1f3115;
+}
+
+/* ACTIONS */
+
+.actions-grid{
+
+    display:grid;
+
+    grid-template-columns:
+    repeat(2,1fr);
+
+    gap:20px;
+}
+
+.action-card{
+
+    text-decoration:none;
+
+    background:
+    linear-gradient(
+    135deg,
+    #f7faef,
+    #ffffff);
+
+    border-radius:24px;
+
+    padding:30px;
+
+    color:#243717;
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:flex-start;
+
+    gap:18px;
+
+    transition:0.3s;
+}
+
+.action-card:hover{
+
+    transform:
+    translateY(-5px);
+
+    background:
+    linear-gradient(
+    135deg,
+    #edf7d7,
+    #ffffff);
+}
+
+.action-card i{
+
+    width:70px;
+    height:70px;
+
+    border-radius:20px;
+
+    background:
+    linear-gradient(
+    135deg,
+    #a5c83d,
+    #ffc247);
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    color:white;
+
+    font-size:28px;
+}
+
+.action-card span{
+
+    font-size:18px;
+
+    font-weight:800;
+}
+
+/* ACTIVITY */
+
+.activity-list{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:18px;
+}
+
+.activity-item{
+
+    background:#f8fbf3;
+
+    border-radius:20px;
+
+    padding:20px;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:15px;
+}
+
+.activity-dot{
+
+    width:14px;
+    height:14px;
+
+    border-radius:50%;
+
+    background:#9bc53d;
+}
+
+/* ANALYTICS */
+
+.analytics-card h3{
+
+    margin-bottom:25px;
+
+    font-size:26px;
+
+    color:#203515;
+}
+
+.chart-box{
+
+    display:flex;
+
+    align-items:flex-end;
+
+    justify-content:space-around;
+
+    height:280px;
+}
+
+.bar{
+
+    width:70px;
+
+    border-radius:20px 20px 0 0;
+
+    display:flex;
+
+    align-items:flex-end;
+
+    justify-content:center;
+
+    color:white;
+
+    font-weight:800;
+
+    padding-bottom:15px;
+}
+
+.users-bar{
+
+    height:75%;
+
+    background:
+    linear-gradient(
+    180deg,
+    #8bc63f,
+    #b7e257);
+}
+
+.recipes-bar{
+
+    height:55%;
+
+    background:
+    linear-gradient(
+    180deg,
+    #ffb347,
+    #ffd447);
+}
+
+.ingredients-bar{
+
+    height:90%;
+
+    background:
+    linear-gradient(
+    180deg,
+    #56d39a,
+    #8ef0b4);
+}
+
+/* STATUS */
+
+.system-status{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:20px;
+}
+
+.status-item{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:18px;
+
+    border-radius:18px;
+
+    background:#f7faef;
+}
+
+.online{
+
+    color:#33b864;
+
+    font-weight:800;
+}
+
+/* RESPONSIVE */
+
+@@media(max-width:1200px){
+
+    .stats-grid{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .content-grid{
+        grid-template-columns:1fr;
+    }
+}
+
+@@media(max-width:768px){
+
+    .hero{
+        flex-direction:column;
+        gap:30px;
+        text-align:center;
+    }
+
+    .hero h1{
+        font-size:42px;
+    }
+
+    .stats-grid{
+        grid-template-columns:1fr;
+    }
+
+    .actions-grid{
+        grid-template-columns:1fr;
+    }
+}
+
+</style>

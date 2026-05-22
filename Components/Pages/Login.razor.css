@@ -1,0 +1,205 @@
+.auth-page {
+    min-height: calc(100vh - 72px);
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    align-items: center;
+    gap: 40px;
+    padding: 50px;
+    background:
+        radial-gradient(circle at top left, rgba(120, 170, 80, 0.22), transparent 35%),
+        radial-gradient(circle at bottom right, rgba(255, 165, 80, 0.22), transparent 35%),
+        linear-gradient(135deg, #fffaf0 0%, #f4f9ef 100%);
+    border-radius: 0;
+}
+
+.auth-left {
+    max-width: 620px;
+}
+
+.brand-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 999px;
+    background: #eef7df;
+    color: #4f7d2a;
+    font-weight: 700;
+    margin-bottom: 24px;
+    box-shadow: 0 8px 24px rgba(80, 110, 40, 0.12);
+}
+
+.auth-left h1 {
+    font-size: 56px;
+    line-height: 1.05;
+    color: #263a1f;
+    font-weight: 800;
+    margin-bottom: 20px;
+}
+
+.auth-left p {
+    font-size: 18px;
+    color: #66745d;
+    line-height: 1.8;
+    max-width: 520px;
+}
+
+.food-icons {
+    display: flex;
+    gap: 18px;
+    margin-top: 30px;
+}
+
+.food-icons span {
+    width: 64px;
+    height: 64px;
+    display: grid;
+    place-items: center;
+    font-size: 30px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 16px 35px rgba(55, 80, 35, 0.12);
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 450px;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(14px);
+    border-radius: 28px;
+    margin-left: 750px;
+    padding: 34px;
+    box-shadow: 0 25px 60px rgba(54, 74, 36, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.card-header-custom {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+.icon-circle {
+    width: 74px;
+    height: 74px;
+    display: grid;
+    place-items: center;
+    margin: 0 auto 14px;
+    border-radius: 50%;
+    font-size: 34px;
+    background: linear-gradient(135deg, #8bbf4d, #f4a442);
+    box-shadow: 0 14px 30px rgba(139, 191, 77, 0.35);
+}
+
+.card-header-custom h3 {
+    color: #263a1f;
+    font-size: 30px;
+    font-weight: 800;
+    margin-bottom: 6px;
+}
+
+.card-header-custom p {
+    color: #77806f;
+    margin: 0;
+}
+
+.form-group-custom {
+    margin-bottom: 18px;
+}
+
+.form-group-custom label {
+    display: block;
+    color: #405331;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.form-control-custom {
+    width: 100%;
+    border: 1px solid #dce7d2;
+    background: #fbfff7;
+    border-radius: 16px;
+    padding: 14px 16px;
+    outline: none;
+    transition: 0.2s ease;
+    color: #263a1f;
+}
+
+.form-control-custom:focus {
+    border-color: #8bbf4d;
+    box-shadow: 0 0 0 4px rgba(139, 191, 77, 0.18);
+    background: white;
+}
+
+.btn-auth {
+    width: 100%;
+    border: none;
+    border-radius: 16px;
+    padding: 14px;
+    margin-top: 8px;
+    background: linear-gradient(135deg, #6fa536, #f4a442);
+    color: white;
+    font-weight: 800;
+    font-size: 16px;
+    transition: 0.2s ease;
+    box-shadow: 0 14px 28px rgba(111, 165, 54, 0.28);
+}
+
+.btn-auth:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 34px rgba(111, 165, 54, 0.35);
+}
+
+.alert-custom {
+    background: #fff1ef;
+    color: #b54535;
+    border: 1px solid #ffd2ca;
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin-bottom: 18px;
+    font-weight: 600;
+}
+
+.auth-footer {
+    margin-top: 22px;
+    text-align: center;
+    color: #6f7968;
+}
+
+.auth-footer a {
+    color: #6fa536;
+    font-weight: 800;
+    text-decoration: none;
+    margin-left: 6px;
+}
+
+.auth-footer a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+    .auth-page {
+        grid-template-columns: 1fr;
+        padding: 28px;
+    }
+
+    .auth-left {
+        text-align: center;
+        margin: auto;
+    }
+
+    .auth-left h1 {
+        font-size: 40px;
+    }
+
+    .auth-left p {
+        margin: auto;
+    }
+
+    .food-icons {
+        justify-content: center;
+    }
+
+    .auth-card {
+        margin: auto;
+    }
+}

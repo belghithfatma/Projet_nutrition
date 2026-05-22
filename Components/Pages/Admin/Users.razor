@@ -1,0 +1,1060 @@
+@page "/admin/users"
+@rendermode InteractiveServer
+
+@using app_nutri.Models
+@using app_nutri.Services
+
+@inject UserService UserService
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<div class="users-page">
+
+
+    <div class="top-section">
+
+      
+
+        <div class="stats-box">
+
+            <div class="stats-icon">
+                <i class="fa-solid fa-users"></i>
+            </div>
+
+            <span>Total Users</span>
+
+            <h2>@users.Count</h2>
+
+        </div>
+
+    </div>
+
+    <!--  -->
+
+    <div class="search-box">
+
+        <i class="fa-solid fa-magnifying-glass"></i>
+
+        <input type="text"
+               placeholder="Search user..."
+               @bind="searchText"
+               @bind:event="oninput" />
+
+    </div>
+
+
+    <div class="table-card">
+
+        <div class="table-header">
+
+            <h3>Users List</h3>
+
+            <div class="table-count">
+                @FilteredUsers.Count() users
+            </div>
+
+        </div>
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>User</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Actions</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                @foreach(var user in FilteredUsers)
+                {
+                    <tr>
+
+                        <td>
+
+                            <div class="user-info">
+
+                                <div class="avatar">
+
+                                    @user.FullName.Substring(0,1)
+
+                                </div>
+
+                                <div>
+
+                                    <strong>@user.FullName</strong>
+
+                                </div>
+
+                            </div>
+
+                        </td>
+
+                        <td>
+
+                            <span class="email">
+
+                                <i class="fa-solid fa-envelope"></i>
+
+                                @user.Email
+
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <span class="role-badge">
+
+                                @if(user.Role == UserRole.Admin)
+                                {
+                                    <i class="fa-solid fa-crown"></i>
+                                }
+                                else
+                                {
+                                    <i class="fa-solid fa-user"></i>
+                                }
+
+                                @user.Role
+
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <div class="actions">
+
+                                <button class="edit-btn"
+                                        @onclick="() => OpenEditModal(user)">
+
+                                    <i class="fa-solid fa-pen"></i>
+
+                                    Edit
+
+                                </button>
+
+                                <button class="delete-btn"
+                                        @onclick="() => DeleteUser(user.Id)">
+
+                                    <i class="fa-solid fa-trash"></i>
+
+                                    Delete
+
+                                </button>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+                }
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+@if(showEditModal)
+{
+    <div class="modal-overlay">
+
+        <div class="edit-modal">
+
+            <!-- HEADER -->
+
+            <div class="modal-header">
+
+                <div>
+
+                    <span class="modal-badge">
+                        User Edition
+                    </span>
+
+                    <h2>Edit User</h2>
+
+                    <p>
+                        Update user information and role permissions.
+                    </p>
+
+                </div>
+
+                <button class="close-btn"
+                        @onclick="CloseModal">
+
+                    <i class="fa-solid fa-xmark"></i>
+
+                </button>
+
+            </div>
+
+            <!-- BODY -->
+
+            <div class="modal-body">
+
+                <div class="input-group">
+
+                    <label>Full Name</label>
+
+                    <input type="text"
+                           @bind="editingUser.FullName" />
+
+                </div>
+
+                <div class="input-group">
+
+                    <label>Email</label>
+
+                    <input type="email"
+                           @bind="editingUser.Email" />
+
+                </div>
+
+                <div class="input-group">
+
+                    <label>Role</label>
+
+                    <select @bind="editingUser.Role">
+
+                        <option value="@UserRole.Admin">
+                            Admin
+                        </option>
+
+                        <option value="@UserRole.User">
+                            User
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+            <!-- FOOTER -->
+
+            <div class="modal-footer">
+
+                <button class="cancel-btn"
+                        @onclick="CloseModal">
+
+                    Cancel
+
+                </button>
+
+                <button class="save-btn"
+                        @onclick="SaveUserEdit">
+
+                    Save Changes
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+}
+
+@code {
+
+    private List<User> users = new();
+
+    private string searchText = "";
+
+    private bool showEditModal = false;
+
+    private User editingUser = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUsers();
+    }
+
+    /* LOAD USERS */
+
+    private async Task LoadUsers()
+    {
+        users = await UserService.GetAllAsync();
+    }
+
+    /* FILTER */
+
+    private IEnumerable<User> FilteredUsers =>
+        users.Where(u =>
+
+            string.IsNullOrWhiteSpace(searchText)
+
+            ||
+
+            u.FullName.Contains(
+                searchText,
+                StringComparison.OrdinalIgnoreCase)
+
+            ||
+
+            u.Email.Contains(
+                searchText,
+                StringComparison.OrdinalIgnoreCase)
+
+            ||
+
+            u.Role.ToString().Contains(
+                searchText,
+                StringComparison.OrdinalIgnoreCase)
+        );
+
+    /* OPEN MODAL */
+
+    private void OpenEditModal(User user)
+    {
+        editingUser = new User
+        {
+            Id = user.Id,
+
+            FullName = user.FullName,
+
+            Email = user.Email,
+
+            Role = user.Role
+        };
+
+        showEditModal = true;
+    }
+
+    /* CLOSE */
+
+    private void CloseModal()
+    {
+        showEditModal = false;
+
+        editingUser = new User();
+    }
+
+    /* SAVE */
+
+    private async Task SaveUserEdit()
+    {
+        await UserService.UpdateAsync(editingUser);
+
+        await LoadUsers();
+
+        showEditModal = false;
+
+        editingUser = new User();
+
+        StateHasChanged();
+    }
+
+    /* DELETE */
+
+    private async Task DeleteUser(int id)
+    {
+        await UserService.DeleteAsync(id);
+
+        await LoadUsers();
+    }
+}
+
+<style>
+
+.users-page{
+
+    padding:35px;
+
+    min-height:100vh;
+
+    background:
+    radial-gradient(circle at top left,#eef7d8,#f8f8f3 40%),
+    radial-gradient(circle at bottom right,#ffe8b6,#f8f8f3 40%);
+
+    font-family:'Segoe UI',sans-serif;
+}
+
+/* TOP */
+
+.top-section{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:35px;
+}
+
+.page-badge{
+
+    display:inline-block;
+
+    background:#edf7d7;
+
+    color:#6e8c2f;
+
+    padding:10px 18px;
+
+    border-radius:50px;
+
+    font-weight:700;
+
+    margin-bottom:20px;
+}
+
+.top-section h1{
+
+    font-size:58px;
+
+    font-weight:900;
+
+    color:#1f3115;
+
+    margin-bottom:12px;
+}
+
+.top-section p{
+
+    max-width:650px;
+
+    color:#697561;
+
+    line-height:1.8;
+
+    font-size:17px;
+}
+
+/* STATS */
+
+.stats-box{
+
+    width:210px;
+    height:210px;
+
+    border-radius:35px;
+
+    background:white;
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    justify-content:center;
+
+    box-shadow:
+    0 15px 40px rgba(181,155,63,0.2);
+
+    position:relative;
+
+    overflow:hidden;
+}
+
+.stats-box::before{
+
+    content:'';
+
+    position:absolute;
+
+    width:240px;
+    height:240px;
+
+    background:
+    linear-gradient(
+    135deg,
+    rgba(168,191,58,0.2),
+    rgba(255,188,59,0.2));
+
+    border-radius:50%;
+
+    top:-120px;
+    right:-80px;
+}
+
+.stats-icon{
+
+    width:70px;
+    height:70px;
+
+    border-radius:22px;
+
+    background:
+    linear-gradient(
+    135deg,
+    #a4c639,
+    #ffbb38);
+
+    color:white;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    font-size:26px;
+
+    margin-bottom:15px;
+
+    box-shadow:
+    0 10px 25px rgba(167,191,58,0.4);
+}
+
+.stats-box span{
+
+    color:#7f7f7f;
+
+    font-size:14px;
+}
+
+.stats-box h2{
+
+    font-size:55px;
+
+    margin-top:8px;
+
+    color:#b59b3f;
+}
+
+/* SEARCH */
+
+.search-box{
+
+    margin:30px 0;
+
+    position:relative;
+}
+
+.search-box i{
+
+    position:absolute;
+
+    left:22px;
+    top:21px;
+
+    color:#91a05f;
+}
+
+.search-box input{
+
+    width:100%;
+
+    padding:20px 20px 20px 58px;
+
+    border:none;
+
+    border-radius:24px;
+
+    background:white;
+
+    font-size:16px;
+
+    box-shadow:
+    0 10px 30px rgba(0,0,0,0.05);
+
+    outline:none;
+
+    transition:0.3s;
+}
+
+.search-box input:focus{
+
+    transform:translateY(-2px);
+
+    box-shadow:
+    0 15px 35px rgba(0,0,0,0.08);
+}
+
+/* TABLE */
+
+.table-card{
+
+    background:
+    rgba(255,255,255,0.8);
+
+    backdrop-filter:blur(15px);
+
+    border-radius:35px;
+
+    overflow:hidden;
+
+    box-shadow:
+    0 20px 45px rgba(0,0,0,0.08);
+}
+
+.table-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:30px 35px;
+
+    border-bottom:1px solid #eee;
+}
+
+.table-header h3{
+
+    font-size:30px;
+
+    color:#203812;
+}
+
+.table-count{
+
+    background:#f0f7db;
+
+    color:#6e8c2f;
+
+    padding:10px 18px;
+
+    border-radius:50px;
+
+    font-weight:700;
+}
+
+table{
+
+    width:100%;
+
+    border-collapse:collapse;
+}
+
+th{
+
+    padding:24px 35px;
+
+    color:#7d7d7d;
+
+    text-transform:uppercase;
+
+    font-size:12px;
+
+    letter-spacing:1px;
+
+    text-align:left;
+}
+
+td{
+
+    padding:26px 35px;
+
+    border-top:1px solid #f1f1f1;
+}
+
+tr{
+
+    transition:0.3s;
+}
+
+tr:hover{
+
+    background:rgba(255,255,255,0.7);
+}
+
+/* USER */
+
+.user-info{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:18px;
+}
+
+.avatar{
+
+    width:56px;
+    height:56px;
+
+    border-radius:20px;
+
+    background:
+    linear-gradient(
+    135deg,
+    #a4c639,
+    #ffbb38);
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    color:white;
+
+    font-weight:900;
+
+    font-size:20px;
+}
+
+.email{
+
+    color:#5f5f5f;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+}
+
+.role-badge{
+
+    padding:12px 18px;
+
+    border-radius:50px;
+
+    background:#eef7d8;
+
+    color:#73912e;
+
+    font-weight:700;
+
+    display:inline-flex;
+
+    align-items:center;
+
+    gap:10px;
+}
+
+/* ACTIONS */
+
+.actions{
+
+    display:flex;
+
+    gap:12px;
+}
+
+.edit-btn,
+.delete-btn{
+
+    border:none;
+
+    padding:13px 20px;
+
+    border-radius:16px;
+
+    color:white;
+
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition:0.3s;
+}
+
+.edit-btn{
+
+    background:
+    linear-gradient(
+    135deg,
+    #8db62f,
+    #a8c63a);
+}
+
+.delete-btn{
+
+    background:
+    linear-gradient(
+    135deg,
+    #ff5f6d,
+    #ff3d3d);
+}
+
+.edit-btn:hover,
+.delete-btn:hover{
+
+    transform:
+    translateY(-4px);
+}
+
+/* MODAL */
+
+.modal-overlay{
+
+    position:fixed;
+
+    inset:0;
+
+    background:
+    rgba(15,23,10,0.55);
+
+    backdrop-filter:blur(12px);
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    z-index:9999;
+
+    padding:30px;
+}
+
+.edit-modal{
+
+    width:720px;
+
+    max-width:100%;
+
+    background:
+    linear-gradient(
+    145deg,
+    rgba(255,255,255,0.95),
+    rgba(255,255,255,0.85));
+
+    backdrop-filter:blur(20px);
+
+    border-radius:40px;
+
+    padding:45px;
+
+    box-shadow:
+    0 30px 80px rgba(0,0,0,0.25);
+}
+
+.modal-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:flex-start;
+
+    margin-bottom:40px;
+}
+
+.modal-badge{
+
+    display:inline-block;
+
+    background:#edf7d7;
+
+    color:#73912e;
+
+    padding:8px 16px;
+
+    border-radius:50px;
+
+    font-weight:700;
+
+    margin-bottom:18px;
+}
+
+.modal-header h2{
+
+    font-size:42px;
+
+    font-weight:900;
+
+    color:#1e2d18;
+
+    margin-bottom:10px;
+}
+
+.modal-header p{
+
+    color:#7c8675;
+}
+
+.close-btn{
+
+    width:52px;
+    height:52px;
+
+    border:none;
+
+    border-radius:50%;
+
+    background:#f3f3f3;
+
+    color:#555;
+
+    cursor:pointer;
+
+    font-size:18px;
+}
+
+/* BODY */
+
+.modal-body{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:28px;
+}
+
+.input-group{
+
+    display:flex;
+
+    flex-direction:column;
+}
+
+.input-group label{
+
+    margin-bottom:12px;
+
+    font-weight:800;
+
+    color:#27351f;
+}
+
+.modal-body input,
+.modal-body select{
+
+    width:100%;
+
+    border:2px solid transparent;
+
+    background:
+    linear-gradient(
+    145deg,
+    rgba(255,255,255,0.95),
+    rgba(245,248,238,0.95));
+
+    padding:22px 24px;
+
+    border-radius:22px;
+
+    outline:none;
+
+    font-size:17px;
+
+    transition:all 0.35s ease;
+
+    color:#1f2f17;
+
+    font-weight:600;
+}
+
+.modal-body input:focus,
+.modal-body select:focus{
+
+    background:white;
+
+    border:2px solid #a4c63a;
+
+    box-shadow:
+    0 0 0 6px rgba(164,198,58,0.16);
+}
+
+/* FOOTER */
+
+.modal-footer{
+
+    margin-top:45px;
+
+    display:flex;
+
+    justify-content:flex-end;
+
+    gap:18px;
+}
+
+.cancel-btn{
+
+    border:none;
+
+    background:#ececec;
+
+    color:#555;
+
+    padding:18px 28px;
+
+    border-radius:18px;
+
+    font-weight:800;
+
+    cursor:pointer;
+}
+
+.save-btn{
+
+    border:none;
+
+    background:
+    linear-gradient(
+    135deg,
+    #9bc53d,
+    #d3b13d);
+
+    color:white;
+
+    padding:18px 30px;
+
+    border-radius:18px;
+
+    font-weight:900;
+
+    cursor:pointer;
+}
+
+/* RESPONSIVE */
+
+@@media(max-width:1000px){
+
+    .top-section{
+
+        flex-direction:column;
+
+        align-items:flex-start;
+
+        gap:25px;
+    }
+
+    .table-card{
+        overflow:auto;
+    }
+
+    table{
+        min-width:950px;
+    }
+}
+
+@@media(max-width:768px){
+
+    .top-section h1{
+        font-size:42px;
+    }
+
+    .edit-modal{
+
+        width:100%;
+
+        padding:30px;
+
+        border-radius:28px;
+    }
+
+    .modal-footer{
+
+        flex-direction:column;
+    }
+
+    .save-btn,
+    .cancel-btn{
+
+        width:100%;
+    }
+}
+
+</style>

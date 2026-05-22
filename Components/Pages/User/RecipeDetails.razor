@@ -6,35 +6,353 @@
 
 @if (recipe is null)
 {
-    <p>Recipe not found.</p>
+    <div class="details-loading">
+        <div class="spinner"></div>
+        <p>Chargement de la recette...</p>
+    </div>
 }
 else
 {
-    <div class="details-card">
-        <img src="@Image" />
-        <div class="content">
-            <h1>@recipe.Title</h1>
-            <p>@recipe.Description</p>
-            <div class="tags"><span>@recipe.Category</span><span>@recipe.CuisineType</span></div>
-            <div class="stats"><div>Total<br /><b>@total.ToString("0") kcal</b></div><div>Per person<br /><b>@perPerson.ToString("0") kcal</b></div><div>Persons<br /><b>@recipe.Servings</b></div></div>
-            <h3>Ingredients</h3>
-            <ul>@foreach (var ri in recipe.RecipeIngredients){<li>@ri.Ingredient?.Name - @ri.Quantity @ri.Ingredient?.Unit</li>}</ul>
-            <h3>Reviews</h3>
-            <div class="review-form"><input placeholder="Name" @bind="newReview.UserName" /><select @bind="newReview.Rating"><option value="1">1 ⭐</option><option value="2">2 ⭐</option><option value="3">3 ⭐</option><option value="4">4 ⭐</option><option value="5">5 ⭐</option></select><textarea placeholder="Comment" @bind="newReview.Comment"></textarea><button @onclick="AddReview">Add Review</button></div>
-            @foreach (var r in reviews){<div class="review"><b>@r.UserName</b> - @Stars(r.Rating)<p>@r.Comment</p></div>}
+    <div class="details-page">
+
+        <!-- Hero -->
+        <div class="details-hero">
+            <img src="@Image" alt="@recipe.Title" />
+            <div class="details-hero-overlay">
+                <div class="details-badges">
+                    <span class="badge-cat">@recipe.Category</span>
+                    <span class="badge-cuisine">@recipe.CuisineType</span>
+                </div>
+                <h1>@recipe.Title</h1>
+                <p>@recipe.Description</p>
+                <span class="details-author">👨‍🍳 @recipe.AuthorName</span>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="details-stats">
+            <div class="stat-card">
+                <span class="stat-icon">🔥</span>
+                <span class="stat-value">@total.ToString("0")</span>
+                <span class="stat-label">kcal total</span>
+            </div>
+            <div class="stat-card highlight">
+                <span class="stat-icon">⚡</span>
+                <span class="stat-value">@perPerson.ToString("0")</span>
+                <span class="stat-label">kcal / personne</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-icon">👥</span>
+                <span class="stat-value">@recipe.Servings</span>
+                <span class="stat-label">personnes</span>
+            </div>
+        </div>
+
+        <div class="details-body">
+
+            <!-- Ingredients -->
+            <div class="details-section">
+                <h2>🥗 Ingrédients</h2>
+                <ul class="ingredients-list">
+                    @foreach (var ri in recipe.RecipeIngredients)
+                    {
+                        <li>
+                            <span class="ing-name">@ri.Ingredient?.Name</span>
+                            <span class="ing-qty">@ri.Quantity @ri.Ingredient?.Unit</span>
+                        </li>
+                    }
+                </ul>
+            </div>
+
+            <!-- Reviews -->
+            <div class="details-section">
+                <h2>⭐ Avis</h2>
+
+                <div class="review-form">
+                    <input placeholder="Votre prénom" @bind="newReview.UserName" />
+                    <select @bind="newReview.Rating">
+                        <option value="1">1 ⭐</option>
+                        <option value="2">2 ⭐⭐</option>
+                        <option value="3">3 ⭐⭐⭐</option>
+                        <option value="4">4 ⭐⭐⭐⭐</option>
+                        <option value="5">5 ⭐⭐⭐⭐⭐</option>
+                    </select>
+                    <textarea placeholder="Laissez un commentaire..." @bind="newReview.Comment" rows="3"></textarea>
+                    <button class="btn-submit" @onclick="AddReview">Envoyer l'avis</button>
+                </div>
+
+                @if (reviews.Any())
+                {
+                    <div class="reviews-list">
+                        @foreach (var r in reviews)
+                        {
+                            <div class="review-card">
+                                <div class="review-top">
+                                    <span class="review-author">@r.UserName</span>
+                                    <span class="review-stars">@Stars(r.Rating)</span>
+                                </div>
+                                <p>@r.Comment</p>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="no-reviews">Aucun avis pour l'instant. Soyez le premier ! 🌟</p>
+                }
+            </div>
+
         </div>
     </div>
 }
+
 @code {
     [Parameter] public int Id { get; set; }
     private Recipe? recipe;
     private List<Review> reviews = new();
     private Review newReview = new() { Rating = 5, UserName = "Guest" };
     private double total, perPerson;
-    private string Image => string.IsNullOrWhiteSpace(recipe?.ImageUrl) ? "https://images.unsplash.com/photo-1546069901-ba9599a7e63c" : recipe.ImageUrl;
+
+    private string Image => string.IsNullOrWhiteSpace(recipe?.ImageUrl)
+        ? "https://images.unsplash.com/photo-1546069901-ba9599a7e63c"
+        : recipe.ImageUrl;
+
     protected override async Task OnInitializedAsync() => await Load();
-    private async Task Load(){ recipe = await RecipeService.GetByIdAsync(Id); if(recipe is not null){ total = RecipeService.GetTotalCalories(recipe); perPerson = RecipeService.GetCaloriesPerPerson(recipe); reviews = await ReviewService.GetByRecipeAsync(Id); newReview.RecipeId = Id; } }
-    private async Task AddReview(){ if(string.IsNullOrWhiteSpace(newReview.Comment)) return; await ReviewService.AddAsync(newReview); newReview = new Review{RecipeId=Id, Rating=5, UserName="Guest"}; await Load(); }
-    private static string Stars(int rating) => new string('⭐', Math.Clamp(rating,1,5));
+
+    private async Task Load()
+    {
+        recipe = await RecipeService.GetByIdAsync(Id);
+        if (recipe is not null)
+        {
+            total = RecipeService.GetTotalCalories(recipe);
+            perPerson = RecipeService.GetCaloriesPerPerson(recipe);
+            reviews = await ReviewService.GetByRecipeAsync(Id);
+            newReview.RecipeId = Id;
+        }
+    }
+
+    private async Task AddReview()
+    {
+        if (string.IsNullOrWhiteSpace(newReview.Comment)) return;
+        await ReviewService.AddAsync(newReview);
+        newReview = new Review { RecipeId = Id, Rating = 5, UserName = "Guest" };
+        await Load();
+    }
+
+    private static string Stars(int rating) => new string('⭐', Math.Clamp(rating, 1, 5));
 }
-<style>.details-card{max-width:1000px;background:white;border-radius:28px;overflow:hidden;box-shadow:0 8px 25px #0002}.details-card>img{width:100%;height:380px;object-fit:cover}.content{padding:35px}.tags{display:flex;gap:12px}.tags span{background:#f1f1f1;padding:8px 14px;border-radius:20px}.stats{display:flex;gap:16px;margin:24px 0}.stats div{flex:1;background:#f8f8f8;padding:20px;border-radius:18px;text-align:center}.review-form{display:grid;gap:10px}.review-form input,.review-form select,.review-form textarea{padding:12px;border:0;border-radius:12px;background:#f5f5f5}.review-form button{padding:12px;border:0;border-radius:12px;background:#6c63ff;color:white}.review{background:#fafafa;padding:14px;border-radius:14px;margin-top:10px}</style>
+
+<style>
+
+.details-page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 30px 20px 60px;
+    background: linear-gradient(160deg, #f5f9ee 0%, #edf5e1 100%);
+    min-height: 100vh;
+    font-family: 'Helvetica Neue', sans-serif;
+}
+
+.details-loading {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 16px;
+    padding: 100px; color: #9ab880;
+}
+
+.spinner {
+    width: 42px; height: 42px;
+    border: 4px solid rgba(120,180,60,0.15);
+    border-top-color: #6db33f;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Hero */
+.details-hero {
+    position: relative;
+    border-radius: 26px;
+    overflow: hidden;
+    height: 390px;
+    margin-bottom: 24px;
+    box-shadow: 0 10px 40px rgba(80,140,40,0.14);
+}
+
+.details-hero img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+}
+
+.details-hero-overlay {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: linear-gradient(to top, rgba(30,60,10,0.82) 0%, transparent 100%);
+    padding: 30px 32px 28px;
+    color: white;
+}
+
+.details-badges { display: flex; gap: 8px; margin-bottom: 10px; }
+
+.badge-cat, .badge-cuisine {
+    background: rgba(255,255,255,0.18);
+    backdrop-filter: blur(8px);
+    color: white;
+    font-size: 12px; font-weight: 700;
+    padding: 4px 13px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.28);
+}
+
+.details-hero-overlay h1 {
+    font-size: 34px; font-weight: 900;
+    color: white; margin-bottom: 6px;
+}
+
+.details-hero-overlay p {
+    font-size: 14px; opacity: 0.82;
+    color: white; margin-bottom: 10px;
+}
+
+.details-author { font-size: 13px; opacity: 0.65; }
+
+/* Stats */
+.details-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+}
+
+.stat-card {
+    background: rgba(255,255,255,0.75);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 22px 16px;
+    text-align: center;
+    border: 1px solid rgba(120,180,60,0.18);
+    box-shadow: 0 4px 16px rgba(80,140,40,0.08);
+    display: flex; flex-direction: column;
+    align-items: center; gap: 4px;
+}
+
+.stat-card.highlight {
+    background: linear-gradient(135deg, #6db33f, #8fca5a);
+    border-color: transparent;
+    box-shadow: 0 8px 24px rgba(100,180,40,0.28);
+}
+
+.stat-card.highlight .stat-value,
+.stat-card.highlight .stat-label,
+.stat-card.highlight .stat-icon { color: white; }
+
+.stat-icon { font-size: 22px; margin-bottom: 2px; }
+
+.stat-value {
+    font-size: 28px; font-weight: 900;
+    color: #5a8a30;
+}
+
+.stat-label {
+    font-size: 11px; color: #9ab880;
+    text-transform: uppercase; letter-spacing: 0.5px;
+}
+
+/* Sections */
+.details-body { display: flex; flex-direction: column; gap: 24px; }
+
+.details-section {
+    background: rgba(255,255,255,0.75);
+    backdrop-filter: blur(10px);
+    border-radius: 22px;
+    padding: 28px;
+    border: 1px solid rgba(120,180,60,0.15);
+    box-shadow: 0 4px 16px rgba(80,140,40,0.07);
+}
+
+.details-section h2 {
+    font-size: 19px; font-weight: 800;
+    color: #2d4a1e; margin-bottom: 18px;
+}
+
+/* Ingredients */
+.ingredients-list {
+    list-style: none; padding: 0; margin: 0;
+    display: flex; flex-direction: column; gap: 10px;
+}
+
+.ingredients-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #f4faea 0%, #eaf5e0 100%);
+    border-radius: 13px;
+    font-size: 14px;
+    border: 1px solid rgba(120,180,60,0.12);
+}
+
+.ing-name { font-weight: 700; color: #2d4a1e; }
+.ing-qty  { color: #6db33f; font-weight: 700; background: rgba(109,179,63,0.12); padding: 3px 10px; border-radius: 10px; }
+
+/* Review Form */
+.review-form {
+    display: grid; gap: 12px;
+    margin-bottom: 22px;
+}
+
+.review-form input,
+.review-form select,
+.review-form textarea {
+    padding: 13px 16px;
+    border: 1.5px solid rgba(120,180,60,0.2);
+    border-radius: 14px;
+    background: rgba(244,250,234,0.7);
+    font-size: 14px; outline: none;
+    font-family: inherit;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.review-form input:focus,
+.review-form select:focus,
+.review-form textarea:focus {
+    border-color: #6db33f;
+    box-shadow: 0 0 0 3px rgba(109,179,63,0.12);
+}
+
+.btn-submit {
+    padding: 13px;
+    background: linear-gradient(135deg, #6db33f, #8fca5a);
+    color: white; border: none;
+    border-radius: 14px; font-weight: 800;
+    font-size: 15px; cursor: pointer;
+    box-shadow: 0 4px 16px rgba(100,180,40,0.25);
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.btn-submit:hover { opacity: 0.88; transform: scale(1.02); }
+
+/* Reviews list */
+.reviews-list { display: flex; flex-direction: column; gap: 12px; }
+
+.review-card {
+    background: linear-gradient(135deg, #f4faea, #eaf5e0);
+    border-radius: 15px;
+    padding: 16px 18px;
+    border-left: 4px solid #6db33f;
+}
+
+.review-top {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 7px;
+}
+
+.review-author { font-weight: 800; font-size: 14px; color: #2d4a1e; }
+.review-stars  { font-size: 13px; }
+
+.review-card p { font-size: 13.5px; color: #6a8a50; margin: 0; }
+
+.no-reviews { color: #b5cfa0; font-size: 14px; text-align: center; padding: 22px; }
+
+</style>

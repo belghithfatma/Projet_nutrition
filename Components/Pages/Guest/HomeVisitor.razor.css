@@ -1,0 +1,299 @@
+.visitor-home-hero {
+    min-height: calc(100vh - 78px);
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    align-items: center;
+    gap: 55px;
+    padding: 70px;
+    background:
+        radial-gradient(circle at top left, rgba(120, 170, 80, 0.22), transparent 35%),
+        radial-gradient(circle at bottom right, rgba(255, 165, 80, 0.22), transparent 35%),
+        linear-gradient(135deg, #fffaf0 0%, #f4f9ef 100%);
+}
+
+.visitor-home-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 11px 20px;
+    border-radius: 999px;
+    background: #eef7df;
+    color: #4f7d2a;
+    font-weight: 800;
+    margin-bottom: 26px;
+    box-shadow: 0 12px 30px rgba(80, 110, 40, 0.12);
+}
+
+.visitor-home-content h1 {
+    max-width: 760px;
+    font-size: 60px;
+    line-height: 1.06;
+    color: #263a1f;
+    font-weight: 900;
+    letter-spacing: -1.5px;
+    margin-bottom: 24px;
+}
+
+.visitor-home-content p {
+    max-width: 650px;
+    color: #66745d;
+    font-size: 20px;
+    line-height: 1.8;
+    margin-bottom: 32px;
+}
+
+.visitor-home-actions {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.visitor-primary-btn,
+.visitor-secondary-btn {
+    text-decoration: none !important;
+    font-weight: 800;
+    border-radius: 999px;
+    padding: 14px 28px;
+    transition: all 0.2s ease;
+}
+
+.visitor-primary-btn {
+    color: white !important;
+    background: linear-gradient(135deg, #6fa536, #f4a442);
+    box-shadow: 0 16px 34px rgba(111, 165, 54, 0.3);
+}
+
+.visitor-primary-btn:hover {
+    color: white !important;
+    transform: translateY(-2px);
+}
+
+.visitor-secondary-btn {
+    color: #6fa536 !important;
+    background: white;
+    border: 1px solid #dce7d2;
+}
+
+.visitor-secondary-btn:hover {
+    background: #eef7df;
+}
+
+.visitor-home-card {
+    background: white;
+    padding: 44px;
+    border-radius: 34px;
+    box-shadow: 0 28px 70px rgba(54, 74, 36, 0.16);
+    text-align: center;
+}
+
+.visitor-home-icon {
+    width: 120px;
+    height: 120px;
+    display: grid;
+    place-items: center;
+    margin: 0 auto 24px;
+    border-radius: 50%;
+    font-size: 54px;
+    background: linear-gradient(135deg, #eef7df, #ffe7bd);
+}
+
+.visitor-home-card h3 {
+    font-size: 32px;
+    font-weight: 900;
+    color: #263a1f;
+    margin-bottom: 12px;
+}
+
+.visitor-home-card p {
+    color: #77806f;
+    font-size: 17px;
+    line-height: 1.7;
+}
+
+.visitor-recipes-section {
+    padding: 80px 70px;
+    background: white;
+}
+
+.visitor-section-header {
+    text-align: center;
+    max-width: 760px;
+    margin: 0 auto 50px;
+}
+
+.visitor-section-header span {
+    display: inline-flex;
+    color: #6fa536;
+    background: #eef7df;
+    padding: 9px 18px;
+    border-radius: 999px;
+    font-weight: 800;
+    margin-bottom: 18px;
+}
+
+.visitor-section-header h2 {
+    color: #263a1f;
+    font-size: 42px;
+    font-weight: 900;
+    margin-bottom: 14px;
+}
+
+.visitor-section-header p {
+    color: #66745d;
+    font-size: 18px;
+    line-height: 1.7;
+}
+
+.visitor-recipes-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 28px;
+}
+
+.visitor-recipe-card {
+    background: #fffaf0;
+    border: 1px solid #edf1e6;
+    border-radius: 28px;
+    overflow: hidden;
+    box-shadow: 0 18px 40px rgba(54, 74, 36, 0.10);
+    transition: all 0.2s ease;
+}
+
+.visitor-recipe-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 24px 55px rgba(54, 74, 36, 0.16);
+}
+
+.visitor-recipe-image {
+    height: 190px;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, #eef7df, #ffe8c5);
+    font-size: 64px;
+}
+
+.visitor-recipe-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.visitor-recipe-body {
+    padding: 24px;
+}
+
+.visitor-recipe-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+}
+
+.visitor-recipe-tags span {
+    font-size: 13px;
+    font-weight: 800;
+    color: #5f8f2f;
+    background: #eef7df;
+    padding: 7px 12px;
+    border-radius: 999px;
+}
+
+.visitor-recipe-body h3 {
+    color: #263a1f;
+    font-weight: 900;
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.visitor-recipe-body p {
+    color: #66745d;
+    line-height: 1.6;
+    min-height: 52px;
+}
+
+.visitor-recipe-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 20px;
+    color: #405331;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.visitor-empty {
+    max-width: 480px;
+    margin: 0 auto;
+    text-align: center;
+    padding: 44px;
+    border-radius: 28px;
+    background: #fffaf0;
+    border: 1px dashed #dce7d2;
+}
+
+.visitor-empty span {
+    font-size: 54px;
+}
+
+.visitor-empty h4 {
+    color: #263a1f;
+    font-weight: 900;
+    margin-top: 18px;
+}
+
+.visitor-empty p,
+.visitor-loading {
+    color: #66745d;
+    text-align: center;
+}
+
+@media (max-width: 1000px) {
+    .visitor-home-hero {
+        grid-template-columns: 1fr;
+        padding: 45px 28px;
+        text-align: center;
+    }
+
+    .visitor-home-content h1 {
+        font-size: 42px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .visitor-home-content p {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .visitor-home-actions {
+        justify-content: center;
+    }
+
+    .visitor-recipes-section {
+        padding: 60px 28px;
+    }
+
+    .visitor-recipes-grid {
+        grid-template-columns: 1fr;
+    }
+}
+.visitor-details-btn {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin-top: 22px;
+    padding: 12px 18px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #6fa536, #f4a442);
+    color: white !important;
+    text-decoration: none !important;
+    font-weight: 900;
+    box-shadow: 0 12px 26px rgba(111, 165, 54, 0.25);
+    transition: all 0.2s ease;
+}
+
+.visitor-details-btn:hover {
+    color: white !important;
+    transform: translateY(-2px);
+    box-shadow: 0 16px 34px rgba(111, 165, 54, 0.35);
+}

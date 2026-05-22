@@ -1,0 +1,151 @@
+@page "/visitor/recipe/{Id:int}"
+@layout AuthLayout
+@rendermode InteractiveServer
+
+@using Microsoft.EntityFrameworkCore
+@using app_nutri.Data
+@using app_nutri.Models
+
+@inject AppDbContext DbContext
+@inject NavigationManager NavigationManager
+
+@if (isLoading)
+{
+    <div class="details-loading">
+        Chargement de la recette...
+    </div>
+}
+else if (recipe == null)
+{
+    <div class="details-not-found">
+        <h3>Recette introuvable</h3>
+        <p>Cette recette n'existe pas ou a été supprimée.</p>
+
+        <a href="/homevisitor#visitor-recipes">
+            Retour aux recettes
+        </a>
+    </div>
+}
+else
+{
+    <section class="recipe-details-page">
+        <a class="back-link" href="/homevisitor#visitor-recipes">
+            ← Retour aux recettes
+        </a>
+
+        <div class="recipe-details-grid">
+            <div class="recipe-details-image">
+                @if (!string.IsNullOrWhiteSpace(recipe.ImageUrl))
+                {
+                    <img src="@recipe.ImageUrl" alt="@recipe.Title" />
+                }
+                else
+                {
+                    <span>🍲</span>
+                }
+            </div>
+
+            <div class="recipe-details-content">
+                <div class="recipe-details-tags">
+                    <span>@recipe.Category</span>
+                    <span>@recipe.CuisineType</span>
+                </div>
+
+                <h1>@recipe.Title</h1>
+
+                <p class="recipe-description">
+                    @recipe.Description
+                </p>
+
+                <div class="recipe-info-cards">
+                    <div>
+                        <strong>Personnes</strong>
+                        <span>@recipe.Servings</span>
+                    </div>
+
+                    <div>
+                        <strong> Auteur</strong>
+                        <span>@recipe.AuthorName</span>
+                    </div>
+
+                    <div>
+                        <strong> Calories totales</strong>
+                        <span>@FormatNumber(totalCalories) kcal</span>
+                    </div>
+
+                    <div>
+                        <strong> Calories/personne</strong>
+                        <span>@FormatNumber(caloriesPerPerson) kcal</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ingredients-section">
+            <h2>Ingrédients</h2>
+
+            @if (recipe.RecipeIngredients == null || !recipe.RecipeIngredients.Any())
+            {
+                <p class="empty-ingredients">
+                    Aucun ingrédient n'a été ajouté pour cette recette.
+                </p>
+            }
+            else
+            {
+                <div class="ingredients-list">
+                    @foreach (var item in recipe.RecipeIngredients)
+                    {
+                        <div class="ingredient-row">
+                            <div>
+                                <strong>@item.Ingredient?.Name</strong>
+                                <span>
+                                    @item.Quantity @item.Ingredient?.Unit
+                                </span>
+                            </div>
+
+                            <span>
+                                @FormatNumber(item.Quantity * (item.Ingredient?.CaloriesPerUnit ?? 0)) kcal
+                            </span>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+    </section>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Recipe? recipe;
+    private bool isLoading = true;
+    private double totalCalories;
+    private double caloriesPerPerson;
+
+    protected override async Task OnInitializedAsync()
+    {
+        recipe = await DbContext.Recipes
+            .Include(r => r.RecipeIngredients)
+            .ThenInclude(ri => ri.Ingredient)
+            .FirstOrDefaultAsync(r => r.Id == Id);
+
+        if (recipe != null)
+        {
+            totalCalories = recipe.RecipeIngredients
+                .Sum(ri => ri.Quantity * (ri.Ingredient?.CaloriesPerUnit ?? 0));
+
+            caloriesPerPerson = recipe.Servings > 0
+                ? totalCalories / recipe.Servings
+                : 0;
+        }
+
+        isLoading = false;
+    }
+
+    private string FormatNumber(double value)
+    {
+        return value.ToString("0.##");
+    }
+}

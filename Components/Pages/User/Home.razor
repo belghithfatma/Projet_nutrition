@@ -9,139 +9,78 @@
 @inject RecipeService RecipeService
 @inject FavoriteService FavoriteService
 
-<div class="home-container">
+<div class="recipes-page">
 
-    <div class="page-head">
+ 
 
-        <div>
-
-            <h1>Discover Recipes</h1>
-
-            <p>
-                Explore delicious recipes from different cuisines
-            </p>
-
+    <!-- Filters -->
+    <div class="filters-bar">
+        <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input placeholder="Rechercher une recette..."
+                   @bind="searchText"
+                   @bind:event="oninput" />
         </div>
-
-        <a class="primary"
-           href="/create-recipe">
-
-            Create Recipe
-
-        </a>
-
-    </div>
-
-    <div class="filters">
-
-        <input placeholder="Search recipe..."
-               @bind="searchText"
-               @bind:event="oninput" />
-
         <select @bind="selectedCategory">
-
-            <option value="">All Categories</option>
-
-            <option value="Petit-déjeuner">
-                Petit-déjeuner
-            </option>
-
-            <option value="Déjeuner">
-                Déjeuner
-            </option>
-
-            <option value="Dîner">
-                Dîner
-            </option>
-
-            <option value="Dessert">
-                Dessert
-            </option>
-
+            <option value="">Toutes catégories</option>
+            <option value="Petit-déjeuner"> Petit-déjeuner</option>
+            <option value="Déjeuner">Déjeuner</option>
+            <option value="Dîner"> Dîner</option>
+            <option value="Dessert"> Dessert</option>
         </select>
-
         <select @bind="selectedCuisine">
-
-            <option value="">All Cuisines</option>
-
-            <option value="Tunisienne">
-                Tunisienne
-            </option>
-
-            <option value="Française">
-                Française
-            </option>
-
-            <option value="Italienne">
-                Italienne
-            </option>
-
-            <option value="Méditerranéenne">
-                Méditerranéenne
-            </option>
-
+            <option value="">Toutes cuisines</option>
+            <option value="Tunisienne">🇹🇳 Tunisienne</option>
+            <option value="Française">🇫🇷 Française</option>
+            <option value="Italienne">🇮🇹 Italienne</option>
+            <option value="Méditerranéenne">Méditerranéenne</option>
         </select>
-
+        <div class="results-count">@FilteredRecipes.Count() recette(s)</div>
     </div>
 
+    <!-- Grid -->
     <div class="recipes-grid">
-
         @if (loading)
         {
-            <p class="loading">
-                Loading recipes...
-            </p>
+            <div class="loading-state">
+                <div class="spinner"></div>
+                <p>Chargement des recettes...</p>
+            </div>
         }
         else if (FilteredRecipes.Any())
         {
             @foreach (var recipe in FilteredRecipes)
             {
-                <RecipeCard Recipe="recipe"
-                            OnDelete="LoadRecipes" />
+                <RecipeCard Recipe="recipe" OnDelete="LoadRecipes" />
             }
         }
         else
         {
-            <div class="empty-box">
-
-                <h3>No recipes found</h3>
-
-                <p>
-                    Create your first recipe 🍳
-                </p>
-
+            <div class="empty-state">
+                <div class="empty-icon"></div>
+                <h3>Aucune recette trouvée</h3>
+                <p>Modifiez vos filtres ou créez votre première recette !</p>
+                <a href="/create-recipe" class="btn-create-empty">+ Créer une recette</a>
             </div>
         }
-
     </div>
 
 </div>
 
 @code {
-
     private List<Recipe> recipes = new();
-
     private bool loading = true;
-
     private string searchText = "";
-
     private string selectedCategory = "";
-
     private string selectedCuisine = "";
 
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadRecipes();
-    }
+    protected override async Task OnInitializedAsync() => await LoadRecipes();
 
     private async Task LoadRecipes()
     {
         loading = true;
-
         recipes = await RecipeService.GetAllAsync();
-
         loading = false;
-
         StateHasChanged();
     }
 
@@ -150,35 +89,14 @@
         get
         {
             IEnumerable<Recipe> query = recipes;
-
             if (!string.IsNullOrWhiteSpace(searchText))
-            {
                 query = query.Where(r =>
-
-                    r.Title.Contains(
-                        searchText,
-                        StringComparison.OrdinalIgnoreCase)
-
-                    ||
-
-                    r.Description.Contains(
-                        searchText,
-                        StringComparison.OrdinalIgnoreCase)
-                );
-            }
-
+                    r.Title.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                    r.Description.Contains(searchText, StringComparison.OrdinalIgnoreCase));
             if (!string.IsNullOrWhiteSpace(selectedCategory))
-            {
-                query = query.Where(r =>
-                    r.Category == selectedCategory);
-            }
-
+                query = query.Where(r => r.Category == selectedCategory);
             if (!string.IsNullOrWhiteSpace(selectedCuisine))
-            {
-                query = query.Where(r =>
-                    r.CuisineType == selectedCuisine);
-            }
-
+                query = query.Where(r => r.CuisineType == selectedCuisine);
             return query.ToList();
         }
     }
@@ -186,85 +104,227 @@
 
 <style>
 
-.home-container{
-    padding:40px;
+.recipes-page {
+    padding: 36px 40px;
+    background: linear-gradient(160deg, #f5f9ee 0%, #edf5e1 50%, #f8faf2 100%);
+    min-height: 100vh;
+    font-family: 'Helvetica Neue', sans-serif;
 }
 
-.page-head{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:30px;
+/* Hero */
+.recipes-hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255,255,255,0.6);
+    backdrop-filter: blur(14px);
+    border-radius: 28px;
+    padding: 36px 40px;
+    margin-bottom: 32px;
+    border: 1px solid rgba(120,180,60,0.18);
+    box-shadow: 0 8px 32px rgba(80,140,40,0.08);
 }
 
-.page-head h1{
-    font-size:42px;
-    margin-bottom:8px;
+.hero-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(120,180,60,0.12);
+    color: #5a8a30;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(120,180,60,0.2);
+    margin-bottom: 18px;
 }
 
-.page-head p{
-    color:gray;
+.hero-left h1 {
+    font-size: 38px;
+    font-weight: 900;
+    color: #2d4a1e;
+    line-height: 1.15;
+    margin-bottom: 14px;
 }
 
-.primary{
-    background:#6c63ff;
-    color:white;
-    padding:14px 20px;
-    border-radius:14px;
-    text-decoration:none;
-    font-weight:700;
-    transition:0.3s;
+.hero-accent {
+    background: linear-gradient(90deg, #6db33f, #a8d96a);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
-.primary:hover{
-    background:#574bdb;
+.hero-left p {
+    color: #7a9e60;
+    font-size: 15px;
+    max-width: 420px;
+    line-height: 1.6;
+    margin-bottom: 20px;
 }
 
-.filters{
-    display:flex;
-    gap:18px;
-    flex-wrap:wrap;
-    margin-bottom:35px;
+.hero-icons {
+    display: flex;
+    gap: 12px;
 }
 
-.filters input,
-.filters select{
-    padding:14px 18px;
-    border:none;
-    border-radius:14px;
-    background:#f5f5f5;
-    min-width:220px;
-    font-size:15px;
+.hero-icons span {
+    background: white;
+    font-size: 24px;
+    width: 52px; height: 52px;
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 14px rgba(80,140,40,0.12);
+    border: 1px solid rgba(120,180,60,0.15);
 }
 
-.recipes-grid{
-    display:flex;
-    flex-wrap:wrap;
-    gap:25px;
+.btn-create {
+    background: linear-gradient(135deg, #6db33f 0%, #8fca5a 100%);
+    color: white;
+    padding: 15px 28px;
+    border-radius: 18px;
+    font-weight: 800;
+    font-size: 15px;
+    text-decoration: none;
+    box-shadow: 0 6px 20px rgba(100,180,40,0.3);
+    transition: 0.25s;
+    white-space: nowrap;
 }
 
-.loading{
-    font-size:18px;
-    color:gray;
+.btn-create:hover {
+    transform: scale(1.05) translateY(-2px);
+    box-shadow: 0 10px 30px rgba(100,180,40,0.38);
+    color: white;
 }
 
-.empty-box{
-    width:100%;
-    padding:60px;
-    background:white;
-    border-radius:24px;
-    text-align:center;
-    box-shadow:0 8px 25px rgba(0,0,0,0.08);
+/* Filters */
+.filters-bar {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 30px;
 }
 
-.empty-box h3{
-    font-size:28px;
-    margin-bottom:10px;
+.search-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 220px;
 }
 
-.empty-box p{
-    color:gray;
-    font-size:17px;
+.search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 15px;
 }
+
+.search-wrap input {
+    width: 100%;
+    padding: 13px 14px 13px 42px;
+    border: 1.5px solid rgba(120,180,60,0.2);
+    border-radius: 14px;
+    background: rgba(255,255,255,0.8);
+    backdrop-filter: blur(8px);
+    font-size: 14px;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.search-wrap input:focus {
+    border-color: #6db33f;
+    box-shadow: 0 0 0 3px rgba(109,179,63,0.12);
+}
+
+.filters-bar select {
+    padding: 13px 16px;
+    border: 1.5px solid rgba(120,180,60,0.2);
+    border-radius: 14px;
+    background: rgba(255,255,255,0.8);
+    backdrop-filter: blur(8px);
+    font-size: 14px;
+    outline: none;
+    cursor: pointer;
+    min-width: 190px;
+    transition: border-color 0.2s;
+}
+
+.filters-bar select:focus { border-color: #6db33f; }
+
+.results-count {
+    font-size: 13px;
+    color: #9ab880;
+    font-weight: 600;
+    background: rgba(120,180,60,0.1);
+    padding: 8px 16px;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+
+/* Grid */
+.recipes-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+}
+
+/* Loading */
+.loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 80px;
+    color: #9ab880;
+    width: 100%;
+}
+
+.spinner {
+    width: 42px; height: 42px;
+    border: 4px solid rgba(120,180,60,0.15);
+    border-top-color: #6db33f;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Empty */
+.empty-state {
+    width: 100%;
+    padding: 70px 40px;
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(10px);
+    border-radius: 24px;
+    text-align: center;
+    border: 1px solid rgba(120,180,60,0.15);
+    box-shadow: 0 4px 20px rgba(80,140,40,0.07);
+}
+
+.empty-icon { font-size: 64px; margin-bottom: 16px; }
+
+.empty-state h3 {
+    font-size: 24px;
+    font-weight: 800;
+    color: #2d4a1e;
+    margin-bottom: 8px;
+}
+
+.empty-state p { color: #9ab880; font-size: 15px; margin-bottom: 24px; }
+
+.btn-create-empty {
+    display: inline-block;
+    background: linear-gradient(135deg, #6db33f, #8fca5a);
+    color: white;
+    padding: 13px 26px;
+    border-radius: 16px;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 4px 16px rgba(100,180,40,0.25);
+    transition: 0.2s;
+}
+
+.btn-create-empty:hover { opacity: 0.88; transform: scale(1.04); color: white; }
 
 </style>

@@ -5,41 +5,504 @@
 @inject IngredientService IngredientService
 @inject NavigationManager Navigation
 
-<h1>Create New Recipe</h1>
-<div class="form-card">
-    <label>Title</label><input @bind="recipe.Title" />
-    <label>Description</label><textarea @bind="recipe.Description"></textarea>
-    <label>Category</label><select @bind="recipe.Category"><option>Petit-déjeuner</option><option>Déjeuner</option><option>Dîner</option><option>Dessert</option></select>
-    <label>Cuisine Type</label><select @bind="recipe.CuisineType"><option>Tunisienne</option><option>Française</option><option>Italienne</option><option>Méditerranéenne</option></select>
-    <label>Number of Persons</label><input type="number" @bind="recipe.Servings" />
-    <label>Image URL</label><input @bind="recipe.ImageUrl" />
+<div class="create-page">
 
-    <h3>Ingredients</h3>
-    @foreach (var row in selectedIngredients)
-    {
-        <div class="rowx">
-            <select @bind="row.IngredientId">
-                <option value="0">Select ingredient</option>
-                @foreach (var i in ingredients) { <option value="@i.Id">@i.Name (@i.Unit - @i.CaloriesPerUnit kcal)</option> }
-            </select>
-            <input type="number" step="0.1" @bind="row.Quantity" placeholder="Quantity" />
+    <!-- Header -->
+    <div class="create-header">
+        <h1>Créer une <span class="accent">recette</span></h1>
+    </div>
+
+    <div class="create-layout">
+
+        <!-- Left : Infos principales -->
+        <div class="form-card main-card">
+
+            <div class="section-title"> Informations générales</div>
+
+            <div class="field-group">
+                <label>Titre de la recette</label>
+                <input placeholder="Ex: Couscous tunisien traditionnel..." @bind="recipe.Title" />
+            </div>
+
+            <div class="field-group">
+                <label>Description</label>
+                <textarea placeholder="Décrivez votre recette en quelques mots..." @bind="recipe.Description" rows="4"></textarea>
+            </div>
+
+            <div class="field-row">
+                <div class="field-group">
+                    <label>Catégorie</label>
+                    <select @bind="recipe.Category">
+                        <option value="">Choisir...</option>
+                        <option value="Petit-déjeuner"> Petit-déjeuner</option>
+                        <option value="Déjeuner"> Déjeuner</option>
+                        <option value="Dîner"> Dîner</option>
+                        <option value="Dessert"> Dessert</option>
+                    </select>
+                </div>
+
+                <div class="field-group">
+                    <label>Type de cuisine</label>
+                    <select @bind="recipe.CuisineType">
+                        <option value="">Choisir...</option>
+                        <option value="Tunisienne"> Tunisienne</option>
+                        <option value="Française"> Française</option>
+                        <option value="Italienne"> Italienne</option>
+                        <option value="Méditerranéenne"> Méditerranéenne</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="field-row">
+                <div class="field-group">
+                    <label> Nombre de personnes</label>
+                    <input type="number" min="1" placeholder="Ex: 4" @bind="recipe.Servings" />
+                </div>
+
+                <div class="field-group">
+                    <label> URL de l'image</label>
+                    <input placeholder="https://..." @bind="recipe.ImageUrl" />
+                </div>
+            </div>
+
+            <!-- Preview image -->
+            @if (!string.IsNullOrWhiteSpace(recipe.ImageUrl))
+            {
+                <div class="img-preview">
+                    <img src="@recipe.ImageUrl" alt="preview" />
+                    <span class="img-preview-label">Aperçu de l'image</span>
+                </div>
+            }
+
         </div>
-    }
-    <button class="secondary" @onclick="AddIngredientRow">+ Add Ingredient</button>
-    <button class="primary" @onclick="SaveRecipe">Create Recipe</button>
+
+        <!-- Right : Ingrédients -->
+        <div class="form-card ingredients-card">
+
+            <div class="section-title"> Ingrédients</div>
+
+            <div class="ingredients-list">
+                @foreach (var (row, index) in selectedIngredients.Select((r, i) => (r, i)))
+                {
+                    <div class="ingredient-row">
+                        <span class="row-num">@(index + 1)</span>
+                        <select @bind="row.IngredientId" class="ing-select">
+                            <option value="0">Sélectionner...</option>
+                            @foreach (var ing in ingredients)
+                            {
+                                <option value="@ing.Id">@ing.Name (@ing.Unit — @ing.CaloriesPerUnit kcal)</option>
+                            }
+                        </select>
+                        <input type="number"
+                               step="0.1"
+                               min="0"
+                               placeholder="Qté"
+                               @bind="row.Quantity"
+                               class="ing-qty" />
+                        @if (selectedIngredients.Count > 1)
+                        {
+                            <button class="btn-remove" @onclick="() => RemoveRow(row)" title="Supprimer">✕</button>
+                        }
+                    </div>
+                }
+            </div>
+
+            <button class="btn-add-ing" @onclick="AddIngredientRow">
+                + Ajouter un ingrédient
+            </button>
+
+            <!-- Calories preview -->
+            @if (selectedIngredients.Any(r => r.IngredientId > 0 && r.Quantity > 0))
+            {
+                <div class="calories-preview">
+                    <div class="cal-row">
+                        <span>🔥 Calories totales</span>
+                        <strong>@CaloriesTotal.ToString("0") kcal</strong>
+                    </div>
+                    @if (recipe.Servings > 0)
+                    {
+                        <div class="cal-row">
+                            <span> Par personne (@recipe.Servings pers.)</span>
+                            <strong>@(CaloriesTotal / recipe.Servings).ToString("0") kcal</strong>
+                        </div>
+                    }
+                </div>
+            }
+
+        </div>
+
+    </div>
+
+    <!-- Submit -->
+    <div class="form-actions">
+        <a href="/recipes" class="btn-cancel">← Annuler</a>
+        <button class="btn-submit" @onclick="SaveRecipe">
+             Créer la recette
+        </button>
+    </div>
+
 </div>
 
 @code {
     private Recipe recipe = new() { AuthorName = "Fatma", Servings = 1 };
     private List<Ingredient> ingredients = new();
     private List<RecipeIngredient> selectedIngredients = new() { new RecipeIngredient { Quantity = 1 } };
-    protected override async Task OnInitializedAsync() => ingredients = await IngredientService.GetAllAsync();
-    private void AddIngredientRow() => selectedIngredients.Add(new RecipeIngredient { Quantity = 1 });
+
+    protected override async Task OnInitializedAsync()
+        => ingredients = await IngredientService.GetAllAsync();
+
+    private void AddIngredientRow()
+        => selectedIngredients.Add(new RecipeIngredient { Quantity = 1 });
+
+    private void RemoveRow(RecipeIngredient row)
+        => selectedIngredients.Remove(row);
+
+    private double CaloriesTotal => selectedIngredients
+        .Where(r => r.IngredientId > 0 && r.Quantity > 0)
+        .Sum(r =>
+        {
+            var ing = ingredients.FirstOrDefault(i => i.Id == r.IngredientId);
+            return ing is not null ? ing.CaloriesPerUnit * r.Quantity : 0;
+        });
+
     private async Task SaveRecipe()
     {
-        var rows = selectedIngredients.Where(x => x.IngredientId > 0 && x.Quantity > 0).ToList();
+        var rows = selectedIngredients
+            .Where(x => x.IngredientId > 0 && x.Quantity > 0)
+            .ToList();
         await RecipeService.AddAsync(recipe, rows);
-       Navigation.NavigateTo("/recipes", true);
+        Navigation.NavigateTo("/recipes", true);
     }
 }
-<style>.form-card{max-width:760px;background:white;padding:35px;border-radius:24px;box-shadow:0 8px 25px #0002;display:flex;flex-direction:column;gap:12px}input,select,textarea{padding:14px;border:0;border-radius:12px;background:#f5f5f5}.rowx{display:flex;gap:12px}.rowx select{flex:2}.rowx input{flex:1}.primary,.secondary{padding:14px;border:0;border-radius:12px;font-weight:700;cursor:pointer}.primary{background:#6c63ff;color:white}.secondary{background:#eee}</style>
+
+<style>
+
+.create-page {
+    padding: 36px 40px 60px;
+    background: linear-gradient(160deg, #f5f9ee 0%, #edf5e1 50%, #f8faf2 100%);
+    min-height: 100vh;
+    font-family: 'Helvetica Neue', sans-serif;
+}
+
+/* Header */
+.create-header {
+    margin-bottom: 32px;
+}
+
+.header-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(109,179,63,0.12);
+    color: #5a8a30;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(120,180,60,0.22);
+    margin-bottom: 14px;
+}
+
+.create-header h1 {
+    font-size: 36px;
+    font-weight: 900;
+    color: #2d4a1e;
+    margin-bottom: 6px;
+}
+
+.accent {
+    background: linear-gradient(90deg, #6db33f, #a8d96a);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.create-header p {
+    color: #8aab6a;
+    font-size: 15px;
+}
+
+/* Layout */
+.create-layout {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+/* Cards */
+.form-card {
+    background: rgba(255,255,255,0.78);
+    backdrop-filter: blur(12px);
+    border-radius: 24px;
+    padding: 28px 30px;
+    border: 1px solid rgba(120,180,60,0.18);
+    box-shadow: 0 6px 28px rgba(80,140,40,0.09);
+}
+
+.section-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: #2d4a1e;
+    margin-bottom: 22px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid rgba(109,179,63,0.15);
+}
+
+/* Fields */
+.field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin-bottom: 18px;
+}
+
+.field-group label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #5a7a40;
+    letter-spacing: 0.2px;
+}
+
+.field-group input,
+.field-group select,
+.field-group textarea {
+    padding: 13px 16px;
+    border: 1.5px solid rgba(120,180,60,0.2);
+    border-radius: 14px;
+    background: rgba(244,250,234,0.75);
+    font-size: 14px;
+    outline: none;
+    font-family: inherit;
+    color: #2d4a1e;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.field-group input:focus,
+.field-group select:focus,
+.field-group textarea:focus {
+    border-color: #6db33f;
+    background: rgba(255,255,255,0.95);
+    box-shadow: 0 0 0 3px rgba(109,179,63,0.13);
+}
+
+.field-group textarea { resize: vertical; }
+
+.field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+/* Image preview */
+.img-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.img-preview img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 16px;
+    border: 2px solid rgba(120,180,60,0.2);
+    box-shadow: 0 4px 16px rgba(80,140,40,0.1);
+}
+
+.img-preview-label {
+    font-size: 11px;
+    color: #9ab880;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Ingredients */
+.ingredients-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.ingredient-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(244,250,234,0.7);
+    border-radius: 14px;
+    padding: 10px 12px;
+    border: 1px solid rgba(120,180,60,0.15);
+    transition: box-shadow 0.2s;
+}
+
+.ingredient-row:hover {
+    box-shadow: 0 2px 10px rgba(80,140,40,0.1);
+}
+
+.row-num {
+    width: 24px;
+    height: 24px;
+    background: linear-gradient(135deg, #6db33f, #8fca5a);
+    color: white;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.ing-select {
+    flex: 2;
+    padding: 10px 12px;
+    border: 1.5px solid rgba(120,180,60,0.18);
+    border-radius: 11px;
+    background: white;
+    font-size: 13px;
+    outline: none;
+    color: #2d4a1e;
+    transition: border-color 0.2s;
+}
+
+.ing-select:focus { border-color: #6db33f; }
+
+.ing-qty {
+    flex: 0.7;
+    padding: 10px 12px;
+    border: 1.5px solid rgba(120,180,60,0.18);
+    border-radius: 11px;
+    background: white;
+    font-size: 13px;
+    outline: none;
+    color: #2d4a1e;
+    text-align: center;
+    transition: border-color 0.2s;
+}
+
+.ing-qty:focus { border-color: #6db33f; }
+
+.btn-remove {
+    width: 28px; height: 28px;
+    background: rgba(240,80,80,0.1);
+    color: #d03030;
+    border: none;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.2s, transform 0.15s;
+    display: flex; align-items: center; justify-content: center;
+}
+
+.btn-remove:hover {
+    background: rgba(240,80,80,0.2);
+    transform: scale(1.1);
+}
+
+.btn-add-ing {
+    width: 100%;
+    padding: 12px;
+    background: rgba(109,179,63,0.1);
+    color: #5a8a30;
+    border: 2px dashed rgba(109,179,63,0.35);
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+    margin-bottom: 18px;
+}
+
+.btn-add-ing:hover {
+    background: rgba(109,179,63,0.18);
+    border-color: rgba(109,179,63,0.55);
+}
+
+/* Calories preview */
+.calories-preview {
+    background: linear-gradient(135deg, #f4faea, #eaf5e0);
+    border-radius: 16px;
+    padding: 16px 18px;
+    border: 1px solid rgba(120,180,60,0.2);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.cal-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    color: #5a7a40;
+}
+
+.cal-row strong {
+    color: #4a7a20;
+    font-size: 16px;
+    font-weight: 900;
+}
+
+/* Actions */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 16px;
+}
+
+.btn-cancel {
+    padding: 14px 26px;
+    background: rgba(255,255,255,0.8);
+    color: #7a9e60;
+    border: 1.5px solid rgba(120,180,60,0.25);
+    border-radius: 16px;
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: 0.2s;
+    backdrop-filter: blur(8px);
+}
+
+.btn-cancel:hover {
+    background: rgba(255,255,255,1);
+    color: #5a8a30;
+    border-color: rgba(120,180,60,0.45);
+}
+
+.btn-submit {
+    padding: 15px 40px;
+    background: linear-gradient(135deg, #6db33f 0%, #8fca5a 100%);
+    color: white;
+    border: none;
+    border-radius: 16px;
+    font-size: 16px;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow: 0 6px 22px rgba(100,180,40,0.32);
+    transition: opacity 0.2s, transform 0.2s;
+    letter-spacing: 0.3px;
+}
+
+.btn-submit:hover {
+    opacity: 0.9;
+    transform: scale(1.03) translateY(-2px);
+    box-shadow: 0 10px 30px rgba(100,180,40,0.4);
+}
+
+/* Responsive */
+@@media (max-width: 860px) {
+    .create-layout { grid-template-columns: 1fr; }
+    .field-row { grid-template-columns: 1fr; }
+    .create-page { padding: 24px 18px 50px; }
+}
+
+</style>

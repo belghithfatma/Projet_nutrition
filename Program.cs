@@ -4,6 +4,7 @@ using app_nutri.Models;
 using app_nutri.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,16 +25,25 @@ builder.Services.AddScoped<StatisticsService>();
 
 builder.Services.AddScoped<UserService>();
 
-builder.Services.AddAuthorizationCore();
+builder.Services.AddAuthorization();
 
 builder.Services.AddCascadingAuthenticationState();
 
 builder.Services.AddScoped<CustomAuthStateProvider>();
 
+builder.Services.AddScoped<DashboardService>();
 builder.Services.AddScoped<AuthenticationStateProvider>(provider =>
     provider.GetRequiredService<CustomAuthStateProvider>());
 
 builder.Services.AddScoped<AuthService>();
+
+// Configure cookie authentication so the authorization middleware has an authentication service
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/login";
+        options.Cookie.Name = "app_nutri_auth";
+    });
 
 
 
@@ -72,6 +82,11 @@ if (!app.Environment.IsDevelopment())
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseHttpsRedirection();
 app.UseAntiforgery();
+
+// Enable authentication/authorization middleware for secured endpoints
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();

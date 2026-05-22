@@ -53,4 +53,9 @@ public static class PasswordHasher
             return false;
         }
     }
+
+    internal static string Hash(string password)
+    {
+        throw new NotImplementedException();
+    }
 }
